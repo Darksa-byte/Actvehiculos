@@ -1,61 +1,53 @@
-"""Modelo de sucursales y su inventario de vehículos."""
-
 from registrohistorial import RegistroHistorial
-from vehiculo import Vehiculo
 
 
 class Sucursal:
-    """Representa una sucursal que administra vehículos."""
-
-    def __init__(self, idsucursal: str, ciudad: str, direccion: str) -> None:
+    def __init__(self, idsucursal, ciudad, direccion):
         self.idsucursal = idsucursal
         self.ciudad = ciudad
         self.direccion = direccion
-        self.vehiculos: list[Vehiculo] = []
+        self.vehiculos = []
 
-    def _validar_texto(self, valor: str, campo: str) -> str:
-        if not isinstance(valor, str) or not valor.strip():
-            raise ValueError(f"{campo} debe ser un texto no vacío.")
-        return valor.strip()
+    def _validar_texto(self, texto, campo):
+        if not isinstance(texto, str) or not texto.strip():
+            raise ValueError(f"{campo} no puede estar vacío.")
+        return texto.strip()
 
     @property
-    def idsucursal(self) -> str:
-        return self._idsucursal
+    def idsucursal(self):
+        return self.__idsucursal
 
     @idsucursal.setter
-    def idsucursal(self, valor: str) -> None:
-        self._idsucursal = self._validar_texto(valor, "El ID de sucursal")
+    def idsucursal(self, valor):
+        self.__idsucursal = self._validar_texto(valor, "El ID de sucursal")
 
     @property
-    def ciudad(self) -> str:
-        return self._ciudad
+    def ciudad(self):
+        return self.__ciudad
 
     @ciudad.setter
-    def ciudad(self, valor: str) -> None:
-        self._ciudad = self._validar_texto(valor, "La ciudad")
+    def ciudad(self, valor):
+        self.__ciudad = self._validar_texto(valor, "La ciudad")
 
     @property
-    def direccion(self) -> str:
-        return self._direccion
+    def direccion(self):
+        return self.__direccion
 
     @direccion.setter
-    def direccion(self, valor: str) -> None:
-        self._direccion = self._validar_texto(valor, "La dirección")
+    def direccion(self, valor):
+        self.__direccion = self._validar_texto(valor, "La dirección")
 
     @property
-    def vehiculos(self) -> list[Vehiculo]:
-        return self._vehiculos
+    def vehiculos(self):
+        return self.__vehiculos
 
     @vehiculos.setter
-    def vehiculos(self, valor: list[Vehiculo]) -> None:
-        if not isinstance(valor, list):
-            raise ValueError("Los vehículos deben almacenarse en una lista.")
-        self._vehiculos = valor
+    def vehiculos(self, lista_vehiculos):
+        if not isinstance(lista_vehiculos, list):
+            raise ValueError("Los vehículos deben guardarse en una lista.")
+        self.__vehiculos = lista_vehiculos
 
-    def agregar_vehiculo(self, vehiculo: Vehiculo) -> None:
-        """Agrega un vehículo que todavía no esté en la sucursal."""
-        if not isinstance(vehiculo, Vehiculo):
-            raise ValueError("Solo se pueden agregar objetos Vehiculo.")
+    def agregar_vehiculo(self, vehiculo):
         if vehiculo in self.vehiculos:
             raise ValueError("El vehículo ya pertenece a esta sucursal.")
         self.vehiculos.append(vehiculo)
@@ -63,31 +55,26 @@ class Sucursal:
             "Vehículo agregado", f"{vehiculo.patente} agregado a sucursal {self.idsucursal}."
         )
 
-    def remover_vehiculo(self, vehiculo: Vehiculo) -> None:
-        """Retira un vehículo o lanza una excepción si no está presente."""
+    def remover_vehiculo(self, vehiculo):
         if vehiculo not in self.vehiculos:
             raise ValueError("El vehículo no está en esta sucursal.")
         self.vehiculos.remove(vehiculo)
 
-    def transferir_vehiculo(self, vehiculo: Vehiculo, otra_sucursal: "Sucursal") -> None:
-        """Mueve un vehículo a otra sucursal."""
-        if not isinstance(otra_sucursal, Sucursal):
-            raise ValueError("El destino debe ser una Sucursal.")
+    def transferir_vehiculo(self, vehiculo, otra_sucursal):
         if otra_sucursal is self:
             raise ValueError("La sucursal de destino debe ser diferente.")
-        self.remover_vehiculo(vehiculo)
-        try:
-            otra_sucursal.agregar_vehiculo(vehiculo)
-        except Exception:
-            self.vehiculos.append(vehiculo)
-            raise
+        if vehiculo not in self.vehiculos:
+            raise ValueError("El vehículo no está en esta sucursal.")
+        if vehiculo in otra_sucursal.vehiculos:
+            raise ValueError("El vehículo ya está en la sucursal de destino.")
+        self.vehiculos.remove(vehiculo)
+        otra_sucursal.agregar_vehiculo(vehiculo)
         RegistroHistorial().registrar(
             "Vehículo transferido",
             f"{vehiculo.patente}: {self.idsucursal} -> {otra_sucursal.idsucursal}.",
         )
 
-    def listar_vehiculos(self) -> None:
-        """Muestra los vehículos registrados en la sucursal."""
+    def listar_vehiculos(self):
         print(f"Sucursal {self.idsucursal} - {self.ciudad}, {self.direccion}")
         if not self.vehiculos:
             print("  No hay vehículos registrados.")
@@ -95,5 +82,5 @@ class Sucursal:
         for vehiculo in self.vehiculos:
             print(f"  {vehiculo}")
 
-    def __str__(self) -> str:
+    def __str__(self):
         return f"[{self.idsucursal}] {self.ciudad} - {self.direccion}"

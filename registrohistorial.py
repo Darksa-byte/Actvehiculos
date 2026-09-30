@@ -1,111 +1,64 @@
-"""Registro centralizado de acciones del sistema."""
+from datetime import datetime
 
 
 class RegistroHistorial:
-    """Almacena acciones con fecha, hora, acción y detalles."""
-
-    _historial: list["RegistroHistorial"] = []
-    _fecha_actual: str = "sin fecha"
-    _hora_actual: str = "00:00:00"
-
-    def __init__(
-        self,
-        fecha: str | None = None,
-        hora: str | None = None,
-        accion: str | None = None,
-        detalles: str | None = None,
-    ) -> None:
-        if fecha is None and hora is None and accion is None and detalles is None:
-            return
-        if fecha is None or hora is None or accion is None or detalles is None:
-            raise ValueError("Un registro debe tener todos sus datos.")
-        self.fecha = fecha
-        self.hora = hora
-        self.accion = accion
-        self.detalles = detalles
+    __historial = []
+    __fecha_actual = "sin fecha"
+    __hora_actual = "00:00:00"
 
     @property
-    def fecha(self) -> str:
-        return self._fecha
-
-    @fecha.setter
-    def fecha(self, valor: str) -> None:
-        if not isinstance(valor, str) or not valor.strip():
-            raise ValueError("La fecha no puede estar vacía.")
-        self._fecha = valor
+    def historial(self):
+        return RegistroHistorial.__historial
 
     @property
-    def hora(self) -> str:
-        return self._hora
+    def fecha_actual(self):
+        return RegistroHistorial.__fecha_actual
 
-    @hora.setter
-    def hora(self, valor: str) -> None:
-        if not isinstance(valor, str) or not valor.strip():
-            raise ValueError("La hora no puede estar vacía.")
-        self._hora = valor
-
-    @property
-    def accion(self) -> str:
-        return self._accion
-
-    @accion.setter
-    def accion(self, valor: str) -> None:
-        if not isinstance(valor, str) or not valor.strip():
-            raise ValueError("La acción no puede estar vacía.")
-        self._accion = valor.strip()
+    @fecha_actual.setter
+    def fecha_actual(self, fecha):
+        try:
+            fecha_valida = datetime.strptime(fecha, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("La fecha debe tener formato AAAA-MM-DD.")
+        RegistroHistorial.__fecha_actual = fecha_valida.strftime("%Y-%m-%d")
 
     @property
-    def detalles(self) -> str:
-        return self._detalles
+    def hora_actual(self):
+        return RegistroHistorial.__hora_actual
 
-    @detalles.setter
-    def detalles(self, valor: str) -> None:
-        if not isinstance(valor, str) or not valor.strip():
-            raise ValueError("Los detalles no pueden estar vacíos.")
-        self._detalles = valor.strip()
+    @hora_actual.setter
+    def hora_actual(self, hora):
+        try:
+            hora_valida = datetime.strptime(hora, "%H:%M")
+        except ValueError:
+            try:
+                hora_valida = datetime.strptime(hora, "%H:%M:%S")
+            except ValueError:
+                raise ValueError("La hora debe tener formato HH:MM o HH:MM:SS.")
+        RegistroHistorial.__hora_actual = hora_valida.strftime("%H:%M:%S")
 
-    def registrar(self, accion: str, detalles: str) -> "RegistroHistorial":
-        """Crea y guarda un registro con la fecha y hora configuradas."""
-        registro = RegistroHistorial(
-            RegistroHistorial._fecha_actual,
-            RegistroHistorial._hora_actual,
-            accion,
-            detalles,
-        )
-        self._historial.append(registro)
-        return registro
+    def registrar(self, accion, detalles):
+        registro = {
+            "fecha": self.fecha_actual,
+            "hora": self.hora_actual,
+            "accion": accion,
+            "detalles": detalles,
+        }
+        self.historial.append(registro)
 
-    def ingresar_fecha(self, fecha: str) -> None:
-        """Establece la fecha que usarán los próximos registros."""
-        if not isinstance(fecha, str) or not fecha.strip():
-            raise ValueError("La fecha no puede estar vacía.")
-        RegistroHistorial._fecha_actual = fecha.strip()
+    def ingresar_fecha(self, fecha):
+        self.fecha_actual = fecha
 
-    def ingresar_hora(self, hora: str) -> None:
-        """Establece la hora que usarán los próximos registros."""
-        partes = hora.strip().split(":")
-        if len(partes) not in {2, 3} or not all(parte.isdigit() for parte in partes):
-            raise ValueError("La hora debe tener formato HH:MM o HH:MM:SS.")
-        horas = int(partes[0])
-        minutos = int(partes[1])
-        segundos = int(partes[2]) if len(partes) == 3 else 0
-        if not 0 <= horas <= 23 or not 0 <= minutos <= 59 or not 0 <= segundos <= 59:
-            raise ValueError("La hora ingresada no es válida.")
-        RegistroHistorial._hora_actual = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+    def ingresar_hora(self, hora):
+        self.hora_actual = hora
 
-    def mostrar_historial(self) -> None:
-        """Imprime todos los registros guardados."""
-        if not self._historial:
+    def mostrar_historial(self):
+        if not self.historial:
             print("No hay registros en el historial.")
             return
-        for registro in self._historial:
-            print(
-                f"{registro.fecha} {registro.hora} | "
-                f"{registro.accion} | {registro.detalles}"
-            )
 
-    def __str__(self) -> str:
-        return (
-            f"{self.fecha} {self.hora} | "
-            f"{self.accion} | {self.detalles}"
-        )
+        for registro in self.historial:
+            print(
+                f"{registro['fecha']} {registro['hora']} | "
+                f"{registro['accion']} | {registro['detalles']}"
+            )
